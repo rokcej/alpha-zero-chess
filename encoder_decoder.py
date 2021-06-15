@@ -98,3 +98,43 @@ def decode_action(encoded: int, board: chess.Board):
 
 	move = chess.Move(from_square, to_square, promotion)
 	return move
+
+
+def encode_board(board: chess.Board):
+	M = np.zeros((8, 8, 14), dtype=int)
+	L = np.zeros((8, 8, 7))
+
+	# P1 and P2
+	for rank in range(8):
+		for file in range(8):
+			piece = board.piece_at(chess.square(file, rank))
+			if piece != None:
+				color_off = 0 if piece.color == chess.WHITE else 1
+				type_off = 0 # chess.PAWN
+				if   piece.piece_type == chess.KNIGHT: type_off = 1
+				elif piece.piece_type == chess.BISHOP: type_off = 2
+				elif piece.piece_type == chess.ROOK:   type_off = 3
+				elif piece.piece_type == chess.QUEEN:  type_off = 4
+				elif piece.piece_type == chess.KING:   type_off = 5
+
+				M[rank, file, color_off * 6 + type_off] = 1
+	# Repetitions
+	if board.is_repetition(1):
+		M[:, :, 12] = 1
+		if board.is_repetition(2):
+			M[:, :, 13] = 1
+
+	# Color
+	if board.turn() == chess.BLACK: T[:, :, 0] = 1
+	# Total moves
+	L[:, :, 1] = len(board.move_stack)
+	# P1 and P2 castling
+	if board.has_kingside_castling_rights(chess.WHITE):  L[:, :, 2] = 1
+	if board.has_queenside_castling_rights(chess.WHITE): L[:, :, 3] = 1
+	if board.has_kingside_castling_rights(chess.BLACK):  L[:, :, 4] = 1
+	if board.has_queenside_castling_rights(chess.BLACK): L[:, :, 5] = 1
+	# No-progress count
+	L[:, :, 6] = board.halfmove_clock
+
+	return M, L
+
