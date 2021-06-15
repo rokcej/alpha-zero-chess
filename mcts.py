@@ -61,7 +61,12 @@ def mcts(net, game):
 	N_sum = sum(child.N for child in root.children.values())
 	for action, child in root.children.items():
 		pi[action] = (child.N ** (1.0 / temp)) / N_sum
-	return pi
+
+	# Get best action
+	# TODO: Softmax sample
+	_, best_action = max([(c.N, a) for a, c in root.children.items()])
+
+	return pi, best_action
 
 # Expand leaf node
 def expand(node: Node, game: Game, net):
