@@ -78,6 +78,7 @@ class OutBlock(nn.Module):
 		p = self.bn_p(p)
 		p = F.relu(p)
 		p = self.conv2_p(p)
+		p = p.reshape(-1) # p.reshape(batch_size, -1)
 
 		# Value head
 		v = self.conv_v(s)

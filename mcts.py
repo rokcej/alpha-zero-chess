@@ -1,3 +1,4 @@
+from game import Game
 import math
 import numpy as np
 
@@ -26,6 +27,8 @@ def mcts(net, game):
 	root = Node(0, game.to_play)
 	expand(root, game, net)
 
+	# TODO: Add Dirichlet noise to root
+
 	for simulation in range(500):
 		node = root
 		path = [node]
@@ -52,14 +55,26 @@ def mcts(net, game):
 			_node.W += value * _node.to_play
 			_node.Q = _node.W / _node.N
 
+	# Get policy
+	temp = 1
+	pi = np.zeros(8 * 8 * 73)
+	N_sum = sum(child.N for child in root.children.values())
+	for action, child in root.children.items():
+		pi[action] = (child.N ** (1.0 / temp)) / N_sum
+	return pi
 
-
-def expand(node, game, net):
+# Expand leaf node
+def expand(node: Node, game: Game, net):
 	if game.is_over():
 		return game.outcome()
 
-	p, v = net.evaluate(game)
-	a = np.random.choice(len(p), p=p)
+	p, v = net(game.get_tensor())
 
-	return value
+	actions = game.get_actions()
+	p_sum = p[actions].sum()
+
+	for action in actions:
+		node.children[action] = Node(p[action] / p_sum, -node.to_play)	
+
+	return v
 	
