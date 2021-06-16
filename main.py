@@ -1,4 +1,4 @@
-from network import Network
+from network import AlphaZeroNet
 from self_play import self_play
 from train import train
 
@@ -7,8 +7,12 @@ import torch
 
 SAVE_FILE = "data/models/model.pt"
 
+NUM_STEPS = 1
+NUM_GAMES = 1
+NUM_EPOCHS = 1000
+
 if __name__ == "__main__":
-	net = Network()
+	net = AlphaZeroNet()
 	net.cuda()
 
 	step_start = 0
@@ -21,15 +25,15 @@ if __name__ == "__main__":
 		print("Initializing new network...")
 		net.initialize_parameters()
 
-	for step in range(step_start, step_start + 20):
+	for step in range(step_start, step_start + NUM_STEPS):
 		print(f"Step {step + 1}")
 
 		net.eval()
 		with torch.no_grad():
-			train_data = self_play(net, 2)
+			train_data = self_play(net, NUM_GAMES)
 
 		net.train()
-		train(net, train_data, 200)
+		train(net, train_data, NUM_EPOCHS)
 
 		print("Saving... ", end="")
 		save_checkpoint = { 

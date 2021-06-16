@@ -53,15 +53,15 @@ def encode_action(move: chess.Move):
 				dir = 7 if dr > 0 else 5
 		plane = 7 * dir + dist
 
-	encoded = (plane * OUT_SHAPE[1] + from_rank) * OUT_SHAPE[2] + from_file
+	encoded = (plane * 8 + from_rank) * 8 + from_file
 	return encoded
 
 
 def decode_action(encoded: int, board: chess.Board):
-	from_file = encoded % OUT_SHAPE[2]
-	tmp = encoded // OUT_SHAPE[2]
-	from_rank = tmp % OUT_SHAPE[1]
-	plane = tmp // OUT_SHAPE[1]
+	from_file = encoded % 8
+	tmp = encoded // 8
+	from_rank = tmp % 8
+	plane = tmp // 8
 
 	df = None # Delta file
 	dr = None # Delta rank
@@ -74,7 +74,7 @@ def decode_action(encoded: int, board: chess.Board):
 	elif plane >= 56: # Knight move
 		df, dr = decode_knight_move[plane - 56]
 	else: # Any other move
-		dist = plane % 7
+		dist = (plane % 7) + 1
 		dir = plane // 7
 		if   dir == 0: df, dr =     0,  dist
 		elif dir == 1: df, dr =  dist,  dist

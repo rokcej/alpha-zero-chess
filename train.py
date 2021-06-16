@@ -57,5 +57,4 @@ def train(net, train_data, num_epochs, batch_size=64):
 			scheduler.step()
 			
 			prog_bar.set_postfix_str(f"Avg loss = {total_loss/len(train_loader)}")
-
-		prog_bar.update(1)
+			prog_bar.update(1)
