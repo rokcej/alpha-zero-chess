@@ -7,9 +7,9 @@ import torch
 
 SAVE_FILE = "data/models/model.pt"
 
-NUM_STEPS = 1
-NUM_GAMES = 2
-NUM_EPOCHS = 1000
+NUM_STEPS = 5
+NUM_GAMES = 1
+NUM_EPOCHS = 400
 
 if __name__ == "__main__":
 	net = AlphaZeroNet()

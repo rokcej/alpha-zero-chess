@@ -1,3 +1,4 @@
+from play import play_move_ai
 from game import Game
 import math
 import numpy as np
@@ -23,7 +24,7 @@ def ucb(parent, child):
 	return child.Q + U
 
 # Monte Carlo tree search
-def mcts(net, game, root=None):
+def mcts(net, game: Game, root=None):
 	if root is None:
 		root = Node(0, game.to_play())
 
@@ -36,7 +37,7 @@ def mcts(net, game, root=None):
 		for a, n in zip(actions, noise):
 			root.children[a].P = root.children[a].P * (1.0 - frac) + n * frac
 
-	for simulation in range(500):
+	for simulation in range(100):
 		node = root
 		path = [node]
 		game_sim = game.clone()
@@ -69,9 +70,14 @@ def mcts(net, game, root=None):
 	for action, child in root.children.items():
 		pi[action] = (child.N ** (1.0 / temp)) / N_sum
 
+
 	# Get best action
-	# TODO: Softmax sample
-	_, best_action = max([(c.N, a) for a, c in root.children.items()])
+	# _, best_action = max([(c.N, a) for a, c in root.children.items()])
+	actions = list(root.children.keys())
+	probs = pi[actions]
+	if game_sim.num_moves() < 30:
+		probs = softmax(probs) # Is this necessary?
+	best_action = np.random.choice(actions, p=pi[actions])
 
 	return pi, best_action, root
 
@@ -93,3 +99,8 @@ def expand(node: Node, game: Game, net):
 
 	return v
 	
+# https://github.com/DylanSnyder31/AlphaZero-Chess/blob/master/Reinforcement_Learning/Monte_Carlo_Search_Tree/MCTS_main.py
+def softmax(x):
+	y = np.exp(x - np.max(x))
+	y /= np.sum(y)
+	return y

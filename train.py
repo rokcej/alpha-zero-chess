@@ -28,12 +28,12 @@ class AlphaZeroLoss(nn.Module):
 
 		return torch.mean(loss_v.view(-1) + loss_p)
 
-def train(net, train_data, num_epochs, batch_size=64):
+def train(net, train_data, num_epochs, batch_size=32):
 	train_set = SelfPlayDataset(train_data)
 	train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=0)
 	
 	criterion = AlphaZeroLoss()
-	optimizer = optim.Adam(net.parameters(), lr=0.2)
+	optimizer = optim.Adam(net.parameters(), lr=0.2, weight_decay=1e-6)
 	scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100, 300, 500], gamma=0.1)
 
 	with tqdm(total=num_epochs, desc="Training", unit="epoch") as prog_bar:

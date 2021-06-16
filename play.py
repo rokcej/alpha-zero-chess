@@ -49,6 +49,8 @@ def play_move_ai(game: Game, net: AlphaZeroNet):
 
 	_, a = max((prob, action) for prob, action in zip(probs, actions))
 	game.apply(a)
+	
+	time.sleep(0.5)
 
 
 def play(net: AlphaZeroNet):
@@ -59,10 +61,10 @@ def play(net: AlphaZeroNet):
 	
 	while not game.is_over():
 		if game.to_play() == 1: # Player
-			play_move_player(game, gui)
+			#play_move_player(game, gui)
+			play_move_ai(game, net)
 		else: # AI
 			play_move_ai(game, net)
-			time.sleep(1)
 
 		gui.draw()
 		gui.handle_events()
@@ -76,9 +78,11 @@ def play(net: AlphaZeroNet):
 
 if __name__ == "__main__":
 	net = AlphaZeroNet()
-	net.initialize_parameters()
 	# net.cuda()
-	# net.load_state_dict(torch.load("data/models/model.pt")["state_dict"])
+	
+	# net.initialize_parameters()
+	net.load_state_dict(torch.load("data/models/model.pt")["state_dict"])
+
 	net.eval()
 
 	with torch.no_grad():
