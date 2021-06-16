@@ -5,7 +5,7 @@ from train import train
 import os
 import torch
 
-SAVE_FILE = "data/model.pt"
+SAVE_FILE = "data/models/model.pt"
 
 if __name__ == "__main__":
 	net = Network()
