@@ -1,36 +1,38 @@
 from game import Game
 from mcts import mcts
+from tqdm import tqdm
 
-def self_play(net):
+def self_play(net, num_games):
 	self_play_data = []
-	for iteration in range(2):
-		# print(f"Game {iteration+1}:", end="")
-		game = Game()
-		game_data = []
+	with tqdm(total=num_games, desc="Self play", unit="game") as prog_bar:
+		for i_game in range(num_games):
+			game = Game()
+			game_data = []
 
-		root = None
+			root = None
 
-		while not game.is_over() and game.num_moves() < 500:
-			# print(f" {game.num_moves()}", end="")
-			pi, action, root = mcts(net, game, root)
+			while not game.is_over() and game.num_moves() < 500:
+				prog_bar.set_postfix_str(f"Move {game.num_moves() + 1}")
+				
+				pi, action, root = mcts(net, game, root)
 
-			game_data.append([game.get_tensor(), pi, game.to_play()])
-			game.apply(action)
-			root = root.children[action]
+				game_data.append([game.get_tensor(), pi, game.to_play()])
+				game.apply(action)
+				root = root.children[action]
 
-		# print(f" {game.num_moves()}")
+			z = 0.0
+			if game.is_over():
+				z = game.outcome()
+				prog_bar.set_postfix_str(f"Outcome = {z}")
+			else:
+				prog_bar.set_postfix_str("Outcome = null")
 
-		z = 0.0
-		if game.is_over():
-			z = game.outcome()
-		# 	print(f"Outcome: {z}")
-		# else:
-		# 	print("Outcomes: too many moves")
+			for i in range(len(game_data)):
+				game_data[i][2] *= z
+			
+			self_play_data.extend(game_data)
 
-		for i in range(len(game_data)):
-			game_data[i][2] *= z
-		
-		self_play_data.extend(game_data)
+			prog_bar.update(1)
 	
 	return self_play_data
 

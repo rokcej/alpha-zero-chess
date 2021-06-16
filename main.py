@@ -22,21 +22,24 @@ if __name__ == "__main__":
 		net.initialize_parameters()
 
 	for step in range(step_start, step_start + 20):
-		print(f"Step {step + 1}... ", end="")
+		print(f"Step {step + 1}")
 
 		net.eval()
-		train_data = self_play(net)
+		with torch.no_grad():
+			train_data = self_play(net, 2)
 
 		net.train()
-		train(net, train_data)
+		train(net, train_data, 200)
 
 		print("Saving... ", end="")
 		save_checkpoint = { 
 			"state_dict": net.state_dict(),
-			"step": step
+			"step": step + 1
 		}
 		torch.save(save_checkpoint, SAVE_FILE + ".bak") # Backup
 		torch.save(save_checkpoint, SAVE_FILE)
+
+		torch.cuda.empty_cache()
 
 		print("Done!")
 
