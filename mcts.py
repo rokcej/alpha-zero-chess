@@ -36,7 +36,7 @@ def mcts(net, game, root=None):
 		for a, n in zip(actions, noise):
 			root.children[a].P = root.children[a].P * (1.0 - frac) + n * frac
 
-	for simulation in range(100):
+	for simulation in range(500):
 		node = root
 		path = [node]
 		game_sim = game.clone()

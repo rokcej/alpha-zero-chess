@@ -33,6 +33,11 @@ class GUI():
 		self.screen = pygame.display.set_mode((640, 640))
 		self.running = True
 
+		self.clicked = None
+
+		self.selected = None
+		self.highlighted = set()
+
 		self.images = {}
 		for color, color_name in COLOR_NAMES.items():
 			self.images[color] = {}
@@ -45,9 +50,14 @@ class GUI():
 		pygame.display.set_icon(self.images[chess.WHITE][chess.PAWN])
 
 	def handle_events(self):
+		self.clicked = None
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				self.running = False
+			elif event.type == pygame.MOUSEBUTTONUP:
+				x, y = pygame.mouse.get_pos()
+				f, r = self.get_square(x, y)
+				self.clicked = (f, r)
 		
 	def draw_board(self):
 		dx = WIDTH / 8
@@ -56,6 +66,15 @@ class GUI():
 			for x in range(8):
 				color = LIGHT_SQUARE if (x + y) % 2 == 0 else DARK_SQUARE
 				self.screen.fill(color, pygame.Rect(x * dx, y * dy, (x + 1) * dx, (y + 1) * dy))
+		
+	def draw_highlights(self):
+		for f, r in self.highlighted:
+			dx = WIDTH / 8
+			dy = HEIGHT / 8
+			cx = (f + 0.5) * dx
+			cy = (7.5 - r) * dy
+			r = 0.15 * min(dx, dy)
+			pygame.draw.circle(self.screen, (30, 200, 50), (cx, cy), r)
 
 	def draw_pieces(self):
 		for r in range(8):
@@ -70,10 +89,15 @@ class GUI():
 		dy = HEIGHT / 8
 		return pygame.Rect(file * dx, (7 - rank) * dy, (file + 1) * dx, (8 - rank) * dy)
 
-	
+	def get_square(self, x, y):
+		file = (x * 8) // WIDTH
+		rank = 7 - (y * 8) // HEIGHT
+		return file, rank
+
 	def draw(self):
 		self.draw_board()
 		self.draw_pieces()
+		self.draw_highlights()
 		pygame.display.flip()
 
 
@@ -109,6 +133,8 @@ def main():
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
+			elif event.type == pygame.MOUSEBUTTONUP:
+				pos = pygame.mouse.get_pos()
 
 if __name__ == "__main__":
 	board = chess.Board()
