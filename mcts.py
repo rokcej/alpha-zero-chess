@@ -9,7 +9,7 @@ class Node():
 		self.W = 0.0
 		self.Q = 0.0
 
-		self.parent = None
+		# self.parent = None # MEMORY LEAK???
 		self.children = {}
 		self.to_play = to_play
 
@@ -23,13 +23,20 @@ def ucb(parent, child):
 	return child.Q + U
 
 # Monte Carlo tree search
-def mcts(net, game):
-	root = Node(0, game.to_play)
-	expand(root, game, net)
+def mcts(net, game, root=None):
+	if root is None:
+		root = Node(0, game.to_play())
 
-	# TODO: Add Dirichlet noise to root
+	if len(root.children) == 0:
+		expand(root, game, net)
+		# Dirichlet noise
+		actions = root.children.keys()
+		noise = np.random.gamma(0.3, 1, len(actions))
+		frac = 0.25
+		for a, n in zip(actions, noise):
+			root.children[a].P = root.children[a].P * (1.0 - frac) + n * frac
 
-	for simulation in range(500):
+	for simulation in range(100):
 		node = root
 		path = [node]
 		game_sim = game.clone()
@@ -66,20 +73,23 @@ def mcts(net, game):
 	# TODO: Softmax sample
 	_, best_action = max([(c.N, a) for a, c in root.children.items()])
 
-	return pi, best_action
+	return pi, best_action, root
 
 # Expand leaf node
 def expand(node: Node, game: Game, net):
 	if game.is_over():
 		return game.outcome()
 
-	p, v = net(game.get_tensor())
+	s = game.get_tensor().cuda()
+	p, v = net(s)
+	p = p.squeeze(0)
+	v = v.squeeze(0)[0]
 
 	actions = game.get_actions()
 	p_sum = p[actions].sum()
 
 	for action in actions:
-		node.children[action] = Node(p[action] / p_sum, -node.to_play)	
+		node.children[action] = Node(p[action] / p_sum, -node.to_play)
 
 	return v
 	

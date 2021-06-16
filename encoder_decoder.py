@@ -1,7 +1,7 @@
 import chess
 import numpy as np
 
-OUT_SHAPE = (8, 8, 73)
+OUT_SHAPE = (73, 8, 8)
 
 # { key: val } -> { val: key }
 def invert_dict(d):
@@ -53,15 +53,15 @@ def encode_action(move: chess.Move):
 				dir = 7 if dr > 0 else 5
 		plane = 7 * dir + dist
 
-	encoded = (from_rank * OUT_SHAPE[1] + from_file) * OUT_SHAPE[2] + plane
+	encoded = (plane * OUT_SHAPE[1] + from_rank) * OUT_SHAPE[2] + from_file
 	return encoded
 
 
 def decode_action(encoded: int, board: chess.Board):
-	plane = encoded % OUT_SHAPE[2]
+	from_file = encoded % OUT_SHAPE[2]
 	tmp = encoded // OUT_SHAPE[2]
-	from_file = tmp % OUT_SHAPE[1]
-	from_rank = tmp // OUT_SHAPE[1]
+	from_rank = tmp % OUT_SHAPE[1]
+	plane = tmp // OUT_SHAPE[1]
 
 	df = None # Delta file
 	dr = None # Delta rank
@@ -101,8 +101,8 @@ def decode_action(encoded: int, board: chess.Board):
 
 
 def encode_board(board: chess.Board):
-	M = np.zeros((8, 8, 14), dtype=int)
-	L = np.zeros((8, 8, 7))
+	M = np.zeros((14, 8, 8), dtype=int)
+	L = np.zeros((7, 8, 8))
 
 	# P1 and P2
 	for rank in range(8):
@@ -117,24 +117,24 @@ def encode_board(board: chess.Board):
 				elif piece.piece_type == chess.QUEEN:  type_off = 4
 				elif piece.piece_type == chess.KING:   type_off = 5
 
-				M[rank, file, color_off * 6 + type_off] = 1
+				M[color_off * 6 + type_off, rank, file] = 1
 	# Repetitions
 	if board.is_repetition(1):
-		M[:, :, 12] = 1
+		M[12, :, :] = 1
 		if board.is_repetition(2):
-			M[:, :, 13] = 1
+			M[13, :, :] = 1
 
 	# Color
-	if board.turn() == chess.BLACK: T[:, :, 0] = 1
+	if board.turn == chess.BLACK: L[0, :, :] = 1
 	# Total moves
-	L[:, :, 1] = len(board.move_stack)
+	L[1, :, :] = len(board.move_stack)
 	# P1 and P2 castling
-	if board.has_kingside_castling_rights(chess.WHITE):  L[:, :, 2] = 1
-	if board.has_queenside_castling_rights(chess.WHITE): L[:, :, 3] = 1
-	if board.has_kingside_castling_rights(chess.BLACK):  L[:, :, 4] = 1
-	if board.has_queenside_castling_rights(chess.BLACK): L[:, :, 5] = 1
+	if board.has_kingside_castling_rights(chess.WHITE):  L[2, :, :] = 1
+	if board.has_queenside_castling_rights(chess.WHITE): L[3, :, :] = 1
+	if board.has_kingside_castling_rights(chess.BLACK):  L[4, :, :] = 1
+	if board.has_queenside_castling_rights(chess.BLACK): L[5, :, :] = 1
 	# No-progress count
-	L[:, :, 6] = board.halfmove_clock
+	L[6, :, :] = board.halfmove_clock
 
 	return M, L
 

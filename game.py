@@ -1,4 +1,5 @@
 import chess
+import torch
 import numpy as np
 import encoder_decoder as endec
 
@@ -7,7 +8,7 @@ class Game():
 		self.board = board or chess.Board()
 
 		M, L = endec.encode_board(self.board)
-		self.Ms = [ np.zeros((8, 8, 14)) for t in range(2 - 1) ]
+		self.Ms = [ np.zeros((14, 8, 8)) for t in range(2 - 1) ]
 		self.Ms.append(M)
 		self.L = L
 
@@ -15,10 +16,10 @@ class Game():
 		return [ endec.encode_action(move) for move in self.board.legal_moves ]
 
 	def get_tensor(self):
-		return np.concatenate(self.Ms + [self.L], 2)
+		return torch.from_numpy(np.concatenate(self.Ms + [self.L], 0)).unsqueeze(0).float()
 
 	def apply(self, a: int):
-		self.board.push(endec.decode_action(a))
+		self.board.push(endec.decode_action(a, self.board))
 
 		M, L = endec.encode_board(self.board)
 		self.Ms.pop(0)

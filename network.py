@@ -8,8 +8,18 @@ class Network(nn.Module):
 		super(Network, self).__init__()
 
 		self.conv_block = ConvBlock()
-		self.res_blocks = [ ResBlock() for i in range(19) ]
+		self.res_blocks = nn.ModuleList([ ResBlock() for i in range(19) ])
 		self.out_block = OutBlock()
+
+	def initialize_parameters(self):
+		for m in self.modules():
+			if isinstance(m, nn.Conv2d):
+				nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
+			elif isinstance(m, nn.BatchNorm2d):
+				nn.init.constant_(m.weight, 1)
+				nn.init.constant_(m.bias, 0)
+			elif isinstance(m, nn.Linear):
+				nn.init.xavier_normal_(m.weight)
 	
 	def forward(self, s):
 		out = self.conv_block(s)
@@ -62,12 +72,12 @@ class OutBlock(nn.Module):
 		super(OutBlock, self).__init__()
 
 		# Policy head
-		self.conv1_p = nn.Conv2d(256, 256, 1, stride=1)
+		self.conv1_p = nn.Conv2d(256, 256, 1, stride=1, bias=False)
 		self.bn_p = nn.BatchNorm2d(256)
-		self.conv2_p = nn.Conv2d(256, 73, 1, stride=1)
+		self.conv2_p = nn.Conv2d(256, 73, 1, stride=1, bias=False)
 
 		# Value head
-		self.conv_v = nn.Conv2d(256, 1, 1, stride=1)
+		self.conv_v = nn.Conv2d(256, 1, 1, stride=1, bias=False)
 		self.bn_v = nn.BatchNorm2d(1)
 		self.fc1_v = nn.Linear(8 * 8 * 1, 256)
 		self.fc2_v = nn.Linear(256, 1)
@@ -89,6 +99,6 @@ class OutBlock(nn.Module):
 		v = self.fc1_v(v)
 		v = F.relu(v)
 		v = self.fc2_v(v)
-		v = F.tanh(v)
+		v = torch.tanh(v)
 
 		return p, v
