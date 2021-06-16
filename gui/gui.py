@@ -23,10 +23,13 @@ def main():
 	screen = pygame.display.set_mode((640, 640))
 	running = True
 
-	img = pygame.image.load("./gui/sprites/white_king.svg")
-	screen.blit(img, (50, 50))
 	
 	draw_board(screen)
+
+	img = pygame.image.load("./gui/sprites/white_king.png")
+	img = pygame.transform.smoothscale(img, (WIDTH // 8, HEIGHT // 8))
+	screen.blit(img, (0, 0))
+
 
 	pygame.display.flip()
 

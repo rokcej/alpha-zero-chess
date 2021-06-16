@@ -12,7 +12,7 @@ class SelfPlayDataset(Dataset):
 		self.z = data[:, 2]
 
 	def __len__(self):
-		return len(self.x)
+		return len(self.s)
 
 	def __getitem__(self, idx):
 		return self.s[idx], self.pi[idx], self.z[idx]
@@ -21,7 +21,7 @@ class AlphaZeroLoss(nn.Module):
 	def __init__(self):
 		super(AlphaZeroLoss, self).__init__()
 
-	def forward(p, pi, v, z):
+	def forward(self, p, pi, v, z):
 		loss_v = ((z - v) ** 2)
 		loss_p = torch.sum(-pi * p, 1)
 
@@ -35,8 +35,8 @@ def train(net, train_data):
 	optimizer = optim.Adam(net.parameters(), lr=0.2)
 	scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100, 300, 500], gamma=0.1)
 
-	for epoch in range(20):
-		print(f"Epoch {epoch+1}: ", end="")
+	for epoch in range(200):
+		# print(f"Epoch {epoch+1}: ", end="")
 		for i, data in enumerate(train_loader, 0):
 			s, pi, z = data
 			s = s.cuda()
@@ -51,7 +51,6 @@ def train(net, train_data):
 
 			optimizer.step()
 
-			print(loss.data.cpu().detach().numpy())
+			# print(loss.data.cpu().detach().numpy())
 
 		scheduler.step()
-

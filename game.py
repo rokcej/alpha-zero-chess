@@ -16,7 +16,7 @@ class Game():
 		return [ endec.encode_action(move) for move in self.board.legal_moves ]
 
 	def get_tensor(self):
-		return torch.from_numpy(np.concatenate(self.Ms + [self.L], 0)).unsqueeze(0).float()
+		return torch.from_numpy(np.concatenate(self.Ms + [self.L], 0)).float()
 
 	def apply(self, a: int):
 		self.board.push(endec.decode_action(a, self.board))

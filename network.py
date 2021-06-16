@@ -100,5 +100,6 @@ class OutBlock(nn.Module):
 		v = F.relu(v)
 		v = self.fc2_v(v)
 		v = torch.tanh(v)
+		v = v.reshape(-1)
 
 		return p, v
