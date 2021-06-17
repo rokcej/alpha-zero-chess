@@ -61,8 +61,8 @@ def play(net: AlphaZeroNet):
 	
 	while not game.is_over():
 		if game.to_play() == 1: # Player
-			#play_move_player(game, gui)
-			play_move_ai(game, net)
+			play_move_player(game, gui)
+			#play_move_ai(game, net)
 		else: # AI
 			play_move_ai(game, net)
 
@@ -79,7 +79,7 @@ def play(net: AlphaZeroNet):
 if __name__ == "__main__":
 	net = AlphaZeroNet()
 	# net.cuda()
-	
+
 	# net.initialize_parameters()
 	net.load_state_dict(torch.load("data/models/model.pt")["state_dict"])
 

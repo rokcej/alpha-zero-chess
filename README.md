@@ -3,7 +3,6 @@
 ## Dependencies
 
 ```bash
-pip install chess
-pip install torch
+pip install -r requirements.txt
 ```
 

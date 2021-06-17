@@ -2,7 +2,7 @@ from game import Game
 from mcts import mcts
 from tqdm import tqdm
 
-MAX_MOVES = 256
+MAX_MOVES = 500
 
 def self_play(net, num_games):
 	self_play_data = []
@@ -25,9 +25,9 @@ def self_play(net, num_games):
 			z = 0.0
 			if game.is_over():
 				z = game.outcome()
-				prog_bar.set_postfix_str(f"Outcome = {z}")
+				prog_bar.set_postfix_str(f"Outcome = {z} after {game.num_moves()} moves")
 			else:
-				prog_bar.set_postfix_str("Outcome = null")
+				prog_bar.set_postfix_str("Outcome = max moves reached")
 
 			for i in range(len(game_data)):
 				game_data[i][2] *= z

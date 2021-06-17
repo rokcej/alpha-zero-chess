@@ -3,6 +3,8 @@ from game import Game
 import math
 import numpy as np
 
+NUM_SIMULATIONS = 400
+
 class Node():
 	def __init__(self, P: float, to_play: int):
 		self.P = P
@@ -37,7 +39,7 @@ def mcts(net, game: Game, root=None):
 		for a, n in zip(actions, noise):
 			root.children[a].P = root.children[a].P * (1.0 - frac) + n * frac
 
-	for simulation in range(100):
+	for simulation in range(NUM_SIMULATIONS):
 		node = root
 		path = [node]
 		game_sim = game.clone()
