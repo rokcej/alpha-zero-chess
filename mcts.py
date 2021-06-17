@@ -1,9 +1,8 @@
-from play import play_move_ai
 from game import Game
 import math
 import numpy as np
 
-NUM_SIMULATIONS = 400
+NUM_SIMULATIONS = 500
 
 class Node():
 	def __init__(self, P: float, to_play: int):
@@ -23,7 +22,7 @@ def ucb(parent, child):
 	C = math.log((1 + parent.N + c_base) / c_base) + c_init
 	U = C * child.P * math.sqrt(parent.N) / (1 + child.N)
 
-	return child.Q + U
+	return -child.Q + U # Minus cause child has opposite sign
 
 # Monte Carlo tree search
 def mcts(net, game: Game, root=None):
@@ -94,10 +93,11 @@ def expand(node: Node, game: Game, net):
 	v = v.squeeze(0).item()
 
 	actions = game.get_actions()
-	p_sum = p[actions].sum()
+	p_sum = p[actions].sum().item()
 
 	for action in actions:
-		node.children[action] = Node(p[action] / p_sum, -node.to_play)
+		prior = p[action].item()
+		node.children[action] = Node(prior / p_sum, -node.to_play)
 
 	return v
 	

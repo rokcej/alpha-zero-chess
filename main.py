@@ -7,7 +7,7 @@ import torch
 
 SAVE_FILE = "data/models/model.pt"
 
-NUM_STEPS = 10
+NUM_STEPS = 5
 NUM_GAMES = 1
 NUM_EPOCHS = 600
 

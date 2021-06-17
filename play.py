@@ -1,5 +1,6 @@
 from gui import GUI
 from game import Game
+from mcts import mcts
 from network import AlphaZeroNet
 import encoder_decoder as endec
 
@@ -52,19 +53,44 @@ def play_move_ai(game: Game, net: AlphaZeroNet):
 	
 	time.sleep(0.5)
 
+def play_move_ai_mcts(game: Game, net: AlphaZeroNet):
+	pi, a, root = mcts(net, game)
+
+	actions = game.get_actions()
+	for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
+		print(prob, move, root.children[action].P, root.children[action].N, root.children[action].W, root.children[action].Q)
+
+	game.apply(a)
+
 
 def play(net: AlphaZeroNet):
 	game = Game()
-	gui = GUI(game.board)
+	
+	# Fool's mate
+	# game.apply(endec.encode_action(chess.Move.from_uci("f2f3")))
+	# game.apply(endec.encode_action(chess.Move.from_uci("e7e6")))
+	# game.apply(endec.encode_action(chess.Move.from_uci("g2g4")))
 
+	# Scholar's mate
+	game.apply(endec.encode_action(chess.Move.from_uci("e2e4")))
+	game.apply(endec.encode_action(chess.Move.from_uci("e7e5")))
+	game.apply(endec.encode_action(chess.Move.from_uci("f1c4")))
+	game.apply(endec.encode_action(chess.Move.from_uci("b8c6")))
+	game.apply(endec.encode_action(chess.Move.from_uci("d1h5")))
+	game.apply(endec.encode_action(chess.Move.from_uci("d7d6")))
+
+	gui = GUI(game.board)
 	gui.draw()
 	
 	while not game.is_over():
-		if game.to_play() == 1: # Player
+		if game.to_play() == 1: # White
+			# play_move_player(game, gui)
+			# play_move_ai(game, net)
+			play_move_ai_mcts(game, net)
+		else: # Black
 			play_move_player(game, gui)
-			#play_move_ai(game, net)
-		else: # AI
-			play_move_ai(game, net)
+			# play_move_ai(game, net)
+			# play_move_ai_mcts(game, net)
 
 		gui.draw()
 		gui.handle_events()
@@ -75,10 +101,9 @@ def play(net: AlphaZeroNet):
 		gui.draw()
 		gui.handle_events()
 
-
 if __name__ == "__main__":
 	net = AlphaZeroNet()
-	# net.cuda()
+	net.cuda()
 
 	# net.initialize_parameters()
 	net.load_state_dict(torch.load("data/models/model.pt")["state_dict"])
