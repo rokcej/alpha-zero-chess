@@ -2,8 +2,6 @@ from game import Game
 import math
 import numpy as np
 
-NUM_SIMULATIONS = 500
-
 class Node():
 	def __init__(self, P: float, to_play: int):
 		self.P = P
@@ -25,7 +23,7 @@ def ucb(parent, child):
 	return -child.Q + U # Minus cause child has opposite sign
 
 # Monte Carlo tree search
-def mcts(net, game: Game, root=None):
+def mcts(net, game: Game, num_simulations, root=None):
 	if root is None:
 		root = Node(0, game.to_play())
 
@@ -38,7 +36,7 @@ def mcts(net, game: Game, root=None):
 		for a, n in zip(actions, noise):
 			root.children[a].P = root.children[a].P * (1.0 - frac) + n * frac
 
-	for simulation in range(NUM_SIMULATIONS):
+	for simulation in range(num_simulations):
 		node = root
 		path = [node]
 		game_sim = game.clone()
@@ -76,9 +74,11 @@ def mcts(net, game: Game, root=None):
 	# _, best_action = max([(c.N, a) for a, c in root.children.items()])
 	actions = list(root.children.keys())
 	probs = pi[actions]
-	if game_sim.num_moves() < 30:
+	if game_sim.num_moves() < 30: # Softmax sample
 		probs = softmax(probs) # Is this necessary?
-	best_action = np.random.choice(actions, p=pi[actions])
+		best_action = np.random.choice(actions, p=pi[actions])
+	else: # Max probability
+		best_action = actions[np.argmax(probs)]
 
 	return pi, best_action, root
 

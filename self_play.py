@@ -2,9 +2,8 @@ from game import Game
 from mcts import mcts
 from tqdm import tqdm
 
-MAX_MOVES = 500
 
-def self_play(net, num_games):
+def self_play(net, num_games, max_moves, num_simulations):
 	self_play_data = []
 	with tqdm(total=num_games, desc="Self play", unit="game") as prog_bar:
 		for i_game in range(num_games):
@@ -13,10 +12,10 @@ def self_play(net, num_games):
 
 			root = None
 
-			while not game.is_over() and game.num_moves() < MAX_MOVES:
+			while not game.is_over() and game.num_moves() < max_moves:
 				prog_bar.set_postfix_str(f"Move {game.num_moves() + 1}")
 				
-				pi, action, root = mcts(net, game, root)
+				pi, action, root = mcts(net, game, num_simulations, root)
 
 				game_data.append([game.get_tensor(), pi, game.to_play()])
 				game.apply(action)

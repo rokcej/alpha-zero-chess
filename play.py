@@ -7,6 +7,8 @@ import encoder_decoder as endec
 import chess
 import time
 import torch
+import random
+import time
 
 def play_move_player(game: Game, gui: GUI):
 	gui.clicked = None
@@ -40,7 +42,7 @@ def play_move_player(game: Game, gui: GUI):
 
 
 def play_move_ai(game: Game, net: AlphaZeroNet):
-	s = game.get_tensor().unsqueeze(0) # .cuda()
+	s = game.get_tensor().unsqueeze(0).cuda()
 	p, v = net(s)
 	p = p.squeeze(0)
 	v = v.squeeze(0).item()
@@ -54,7 +56,7 @@ def play_move_ai(game: Game, net: AlphaZeroNet):
 	time.sleep(0.5)
 
 def play_move_ai_mcts(game: Game, net: AlphaZeroNet):
-	pi, a, root = mcts(net, game)
+	pi, a, root = mcts(net, game, 500)
 
 	actions = game.get_actions()
 	for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
@@ -63,21 +65,26 @@ def play_move_ai_mcts(game: Game, net: AlphaZeroNet):
 	game.apply(a)
 
 
+def play_move_random(game: Game):
+	a = random.choice(game.get_actions())
+	game.apply(a)
+
+
 def play(net: AlphaZeroNet):
 	game = Game()
-	
-	# Fool's mate
+
+	# # Fool's mate
 	# game.apply(endec.encode_action(chess.Move.from_uci("f2f3")))
 	# game.apply(endec.encode_action(chess.Move.from_uci("e7e6")))
 	# game.apply(endec.encode_action(chess.Move.from_uci("g2g4")))
 
-	# Scholar's mate
-	game.apply(endec.encode_action(chess.Move.from_uci("e2e4")))
-	game.apply(endec.encode_action(chess.Move.from_uci("e7e5")))
-	game.apply(endec.encode_action(chess.Move.from_uci("f1c4")))
-	game.apply(endec.encode_action(chess.Move.from_uci("b8c6")))
-	game.apply(endec.encode_action(chess.Move.from_uci("d1h5")))
-	game.apply(endec.encode_action(chess.Move.from_uci("d7d6")))
+	# # Scholar's mate
+	# game.apply(endec.encode_action(chess.Move.from_uci("e2e4")))
+	# game.apply(endec.encode_action(chess.Move.from_uci("e7e5")))
+	# game.apply(endec.encode_action(chess.Move.from_uci("f1c4")))
+	# game.apply(endec.encode_action(chess.Move.from_uci("b8c6")))
+	# game.apply(endec.encode_action(chess.Move.from_uci("d1h5")))
+	# game.apply(endec.encode_action(chess.Move.from_uci("d7d6")))
 
 	gui = GUI(game.board)
 	gui.draw()
@@ -85,12 +92,14 @@ def play(net: AlphaZeroNet):
 	while not game.is_over():
 		if game.to_play() == 1: # White
 			# play_move_player(game, gui)
-			# play_move_ai(game, net)
 			play_move_ai_mcts(game, net)
+			# play_move_ai_mcts(game, net)
 		else: # Black
-			play_move_player(game, gui)
+			# play_move_player(game, gui)
 			# play_move_ai(game, net)
 			# play_move_ai_mcts(game, net)
+			play_move_random(game)
+
 
 		gui.draw()
 		gui.handle_events()

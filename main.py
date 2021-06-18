@@ -7,8 +7,10 @@ import torch
 
 SAVE_FILE = "data/models/model.pt"
 
-NUM_STEPS = 5
-NUM_GAMES = 1
+NUM_STEPS = 10
+NUM_GAMES = 4
+MAX_MOVES = 400
+NUM_SIMULATIONS = 500
 NUM_EPOCHS = 600
 
 if __name__ == "__main__":
@@ -30,7 +32,7 @@ if __name__ == "__main__":
 
 		net.eval()
 		with torch.no_grad():
-			train_data = self_play(net, NUM_GAMES)
+			train_data = self_play(net, NUM_GAMES, MAX_MOVES, NUM_SIMULATIONS)
 
 		net.train()
 		train(net, train_data, NUM_EPOCHS)
