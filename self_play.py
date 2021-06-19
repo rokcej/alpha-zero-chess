@@ -17,7 +17,7 @@ def self_play(net, num_games, max_moves, num_simulations):
 				
 				pi, action, root = mcts(net, game, num_simulations, root)
 
-				game_data.append([game.get_tensor(), pi, game.to_play()])
+				game_data.append([game.get_state(), pi, game.to_play()])
 				game.apply(action)
 				root = root.children[action]
 

@@ -27,7 +27,7 @@ def play_move_player(game: Game, gui: GUI):
 				if (f, r) in gui.highlighted:
 					f0, r0 = gui.selected
 					move = chess.Move(chess.square(f0, r0), chess.square(f, r))
-					a = endec.encode_action(move)
+					a = endec.encode_action(move, game.board)
 					game.apply(a)
 					break
 				else:
@@ -42,7 +42,7 @@ def play_move_player(game: Game, gui: GUI):
 
 
 def play_move_ai_without_mcts(game: Game, net: AlphaZeroNet):
-	s = game.get_tensor().unsqueeze(0).cuda()
+	s = game.get_state().unsqueeze(0).cuda()
 	p, v = net(s)
 	p = p.squeeze(0).detach().cpu().numpy()
 	v = v.squeeze(0).item()

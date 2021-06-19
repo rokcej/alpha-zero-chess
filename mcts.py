@@ -89,7 +89,7 @@ def expand(node: Node, game: Game, net):
 
 	####################################################
 	# This part takes up >95% of MCTS computation time #
-	s = game.get_tensor().cuda().unsqueeze(0)
+	s = game.get_state().cuda().unsqueeze(0)
 	p, v = net(s)
 
 	p = p.squeeze(0).detach().cpu().numpy()
