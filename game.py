@@ -7,25 +7,15 @@ class Game():
 	def __init__(self, board=None):
 		self.board = board or chess.Board()
 
-		M, L = endec.encode_board(self.board)
-		self.Ms = [ np.zeros((14, 8, 8)) for t in range(2 - 1) ]
-		self.Ms.append(M)
-		self.L = L
-
 	def get_actions(self):
-		return [ endec.encode_action(move) for move in self.board.legal_moves ]
+		return [ endec.encode_action(move, self.board) for move in self.board.legal_moves ]
 
 	def get_tensor(self):
-		return torch.from_numpy(np.concatenate(self.Ms + [self.L], 0)).float()
+		M, L = endec.encode_board(self.board)
+		return torch.from_numpy(np.concatenate((M, L), 0)).float()
 
 	def apply(self, a: int):
 		self.board.push(endec.decode_action(a, self.board))
-
-		M, L = endec.encode_board(self.board)
-		self.Ms.pop(0)
-		self.Ms.append(M)
-		self.L = L
-
 		return self
 
 	def clone(self):

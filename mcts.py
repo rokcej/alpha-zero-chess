@@ -87,10 +87,14 @@ def expand(node: Node, game: Game, net):
 	if game.is_over():
 		return game.outcome()
 
+	####################################################
+	# This part takes up >95% of MCTS computation time #
 	s = game.get_tensor().cuda().unsqueeze(0)
 	p, v = net(s)
-	p = p.squeeze(0)
+
+	p = p.squeeze(0).detach().cpu().numpy()
 	v = v.squeeze(0).item()
+	####################################################
 
 	actions = game.get_actions()
 	p_sum = p[actions].sum().item()
