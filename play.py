@@ -41,10 +41,10 @@ def play_move_player(game: Game, gui: GUI):
 	gui.highlighted.clear()
 
 
-def play_move_ai(game: Game, net: AlphaZeroNet):
+def play_move_ai_without_mcts(game: Game, net: AlphaZeroNet):
 	s = game.get_tensor().unsqueeze(0).cuda()
 	p, v = net(s)
-	p = p.squeeze(0)
+	p = p.squeeze(0).detach().cpu().numpy()
 	v = v.squeeze(0).item()
 
 	actions = game.get_actions()
@@ -56,11 +56,11 @@ def play_move_ai(game: Game, net: AlphaZeroNet):
 	time.sleep(0.5)
 
 def play_move_ai_mcts(game: Game, net: AlphaZeroNet):
-	pi, a, root = mcts(net, game, 500)
+	pi, a, root = mcts(net, game, 200)
 
-	actions = game.get_actions()
-	for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
-		print(prob, move, root.children[action].P, root.children[action].N, root.children[action].W, root.children[action].Q)
+	# actions = game.get_actions()
+	# for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
+	# 	print(prob, move, root.children[action].P, root.children[action].N, root.children[action].W, root.children[action].Q)
 
 	game.apply(a)
 
@@ -70,8 +70,34 @@ def play_move_random(game: Game):
 	game.apply(a)
 
 
+import torch.multiprocessing as mp
+
 def play(net: AlphaZeroNet):
 	game = Game()
+
+	t0 = time.process_time()
+	_, a, _ = mcts(net, game, 500)
+	print(time.process_time() - t0)
+	print(a)
+	print()
+
+
+
+	t0 = time.perf_counter()
+	procs = []
+	for pid in range(2):
+		net2 = AlphaZeroNet()
+		net2.cuda()
+		net2.initialize_parameters()
+		proc = mp.Process(target=mcts, args=(net2, game, 500))
+		proc.start()
+		procs.append(proc)
+	for proc in procs:
+		proc.join()
+
+	print(time.perf_counter() - t0)
+
+	return
 
 	# # Fool's mate
 	# game.apply(endec.encode_action(chess.Move.from_uci("f2f3")))
@@ -93,10 +119,9 @@ def play(net: AlphaZeroNet):
 		if game.to_play() == 1: # White
 			# play_move_player(game, gui)
 			play_move_ai_mcts(game, net)
-			# play_move_ai_mcts(game, net)
+			# play_move_random(game)
 		else: # Black
 			# play_move_player(game, gui)
-			# play_move_ai(game, net)
 			# play_move_ai_mcts(game, net)
 			play_move_random(game)
 
@@ -114,8 +139,8 @@ if __name__ == "__main__":
 	net = AlphaZeroNet()
 	net.cuda()
 
-	# net.initialize_parameters()
-	net.load_state_dict(torch.load("data/models/model.pt")["state_dict"])
+	net.initialize_parameters()
+	# net.load_state_dict(torch.load("data/models/model.pt")["state_dict"])
 
 	net.eval()
 

@@ -7,11 +7,11 @@ import torch
 
 SAVE_FILE = "data/models/model.pt"
 
-NUM_STEPS = 10
-NUM_GAMES = 4
+NUM_STEPS = 1
+NUM_GAMES = 1
 MAX_MOVES = 400
-NUM_SIMULATIONS = 500
-NUM_EPOCHS = 600
+NUM_SIMULATIONS = 50
+NUM_EPOCHS = 250
 
 if __name__ == "__main__":
 	net = AlphaZeroNet()

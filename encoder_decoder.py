@@ -93,7 +93,7 @@ def decode_action(encoded: int, board: chess.Board):
 	to_file = from_file + df
 	to_rank = from_rank + dr
 
-	# Orient board to player's perspective
+	# De-orient board from player's perspective
 	if board.turn == chess.BLACK:
 		from_rank = 7 - from_rank
 		to_rank = 7 - to_rank
