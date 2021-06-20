@@ -83,6 +83,7 @@ def mcts(net, game: Game, num_simulations, root=None):
 	return pi, best_action, root
 
 # Expand leaf node
+# Return absolute outcome
 def expand(node: Node, game: Game, net):
 	if game.is_over():
 		return game.outcome()
@@ -103,7 +104,7 @@ def expand(node: Node, game: Game, net):
 		prior = p[action].item()
 		node.children[action] = Node(prior / p_sum, -node.to_play)
 
-	return v
+	return v * node.to_play
 	
 # https://github.com/DylanSnyder31/AlphaZero-Chess/blob/master/Reinforcement_Learning/Monte_Carlo_Search_Tree/MCTS_main.py
 def softmax(x):

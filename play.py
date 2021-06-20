@@ -58,9 +58,9 @@ def play_move_ai_without_mcts(game: Game, net: AlphaZeroNet):
 def play_move_ai_mcts(game: Game, net: AlphaZeroNet):
 	pi, a, root = mcts(net, game, 200)
 
-	# actions = game.get_actions()
-	# for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
-	# 	print(prob, move, root.children[action].P, root.children[action].N, root.children[action].W, root.children[action].Q)
+	actions = game.get_actions()
+	for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
+		print(prob, move, root.children[action].P, root.children[action].N, root.children[action].W, root.children[action].Q)
 
 	game.apply(a)
 
@@ -70,47 +70,21 @@ def play_move_random(game: Game):
 	game.apply(a)
 
 
-import torch.multiprocessing as mp
-
 def play(net: AlphaZeroNet):
 	game = Game()
 
-	t0 = time.process_time()
-	_, a, _ = mcts(net, game, 500)
-	print(time.process_time() - t0)
-	print(a)
-	print()
-
-
-
-	t0 = time.perf_counter()
-	procs = []
-	for pid in range(2):
-		net2 = AlphaZeroNet()
-		net2.cuda()
-		net2.initialize_parameters()
-		proc = mp.Process(target=mcts, args=(net2, game, 500))
-		proc.start()
-		procs.append(proc)
-	for proc in procs:
-		proc.join()
-
-	print(time.perf_counter() - t0)
-
-	return
-
 	# # Fool's mate
-	# game.apply(endec.encode_action(chess.Move.from_uci("f2f3")))
-	# game.apply(endec.encode_action(chess.Move.from_uci("e7e6")))
-	# game.apply(endec.encode_action(chess.Move.from_uci("g2g4")))
+	# game.apply(endec.encode_action(chess.Move.from_uci("f2f3"), game.board))
+	# game.apply(endec.encode_action(chess.Move.from_uci("e7e6"), game.board))
+	# game.apply(endec.encode_action(chess.Move.from_uci("g2g4"), game.board))
 
-	# # Scholar's mate
-	# game.apply(endec.encode_action(chess.Move.from_uci("e2e4")))
-	# game.apply(endec.encode_action(chess.Move.from_uci("e7e5")))
-	# game.apply(endec.encode_action(chess.Move.from_uci("f1c4")))
-	# game.apply(endec.encode_action(chess.Move.from_uci("b8c6")))
-	# game.apply(endec.encode_action(chess.Move.from_uci("d1h5")))
-	# game.apply(endec.encode_action(chess.Move.from_uci("d7d6")))
+	# Scholar's mate
+	game.apply(endec.encode_action(chess.Move.from_uci("e2e4"), game.board))
+	game.apply(endec.encode_action(chess.Move.from_uci("e7e5"), game.board))
+	game.apply(endec.encode_action(chess.Move.from_uci("f1c4"), game.board))
+	game.apply(endec.encode_action(chess.Move.from_uci("b8c6"), game.board))
+	game.apply(endec.encode_action(chess.Move.from_uci("d1h5"), game.board))
+	game.apply(endec.encode_action(chess.Move.from_uci("d7d6"), game.board))
 
 	gui = GUI(game.board)
 	gui.draw()
@@ -121,9 +95,9 @@ def play(net: AlphaZeroNet):
 			play_move_ai_mcts(game, net)
 			# play_move_random(game)
 		else: # Black
-			# play_move_player(game, gui)
+			play_move_player(game, gui)
 			# play_move_ai_mcts(game, net)
-			play_move_random(game)
+			# play_move_random(game)
 
 
 		gui.draw()
@@ -139,8 +113,8 @@ if __name__ == "__main__":
 	net = AlphaZeroNet()
 	net.cuda()
 
-	net.initialize_parameters()
-	# net.load_state_dict(torch.load("data/models/model.pt")["state_dict"])
+	# net.initialize_parameters()
+	net.load_state_dict(torch.load("data/models/model.pt")["state_dict"])
 
 	net.eval()
 
