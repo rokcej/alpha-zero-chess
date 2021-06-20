@@ -14,7 +14,7 @@ NUM_STEPS = 20
 NUM_GAMES = 10
 MAX_MOVES = 300 # Originally 512
 NUM_SIMULATIONS = 200 # Originally 800
-NUM_EPOCHS = 25
+NUM_EPOCHS = 20
 BATCH_SIZE = 16
 
 if __name__ == "__main__":

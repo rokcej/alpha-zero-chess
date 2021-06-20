@@ -31,7 +31,7 @@ def train(net, train_data, num_epochs, batch_size):
 	
 	criterion = AlphaZeroLoss()
 	optimizer = optim.Adam(net.parameters(), lr=0.2, weight_decay=1e-6)
-	scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10, 15, 20], gamma=0.1) # [100, 300, 500]
+	scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[5, 10, 15], gamma=0.1) # [100, 300, 500]
 
 	with tqdm(total=num_epochs, desc="Training", unit="epoch") as prog_bar:
 		for epoch in range(num_epochs):
