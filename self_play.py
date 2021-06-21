@@ -18,8 +18,7 @@ def self_play(net, num_games, max_moves, num_simulations):
 			while not game.is_over() and game.num_moves() < max_moves:
 				prog_bar.set_postfix_str(f"Move {game.num_moves() + 1}, {results2str(results)}")
 				
-				# pi, action, root = mcts(net, game, num_simulations, root) # Reuse MCTS results
-				pi, action, root = mcts(net, game, num_simulations) # Don't reuse MCTS results
+				pi, action, root = mcts(net, game, num_simulations) #, root) # Reuse MCTS results
 
 				game_data.append([game.get_state(), pi, game.to_play()])
 				game.apply(action)

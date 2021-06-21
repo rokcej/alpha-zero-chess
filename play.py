@@ -58,9 +58,9 @@ def play_move_ai_without_mcts(game: Game, net: AlphaZeroNet):
 def play_move_ai_mcts(game: Game, net: AlphaZeroNet):
 	pi, a, root = mcts(net, game, 200)
 
-	actions = game.get_actions()
-	for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
-		print(prob, move, root.children[action].P, root.children[action].N, root.children[action].W, root.children[action].Q)
+	# actions = game.get_actions()
+	# for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
+	# 	print(prob, move, root.children[action].P, root.children[action].N, root.children[action].W, root.children[action].Q)
 
 	game.apply(a)
 
@@ -78,13 +78,19 @@ def play(net: AlphaZeroNet):
 	# game.apply(endec.encode_action(chess.Move.from_uci("e7e6"), game.board))
 	# game.apply(endec.encode_action(chess.Move.from_uci("g2g4"), game.board))
 
-	# Scholar's mate
-	game.apply(endec.encode_action(chess.Move.from_uci("e2e4"), game.board))
-	game.apply(endec.encode_action(chess.Move.from_uci("e7e5"), game.board))
-	game.apply(endec.encode_action(chess.Move.from_uci("f1c4"), game.board))
-	game.apply(endec.encode_action(chess.Move.from_uci("b8c6"), game.board))
-	game.apply(endec.encode_action(chess.Move.from_uci("d1h5"), game.board))
-	game.apply(endec.encode_action(chess.Move.from_uci("d7d6"), game.board))
+	# # Scholar's mate
+	# game.apply(endec.encode_action(chess.Move.from_uci("e2e4"), game.board))
+	# game.apply(endec.encode_action(chess.Move.from_uci("e7e5"), game.board))
+	# game.apply(endec.encode_action(chess.Move.from_uci("f1c4"), game.board))
+	# game.apply(endec.encode_action(chess.Move.from_uci("b8c6"), game.board))
+	# game.apply(endec.encode_action(chess.Move.from_uci("d1h5"), game.board))
+	# game.apply(endec.encode_action(chess.Move.from_uci("d7d6"), game.board))
+
+
+	net2 = AlphaZeroNet()
+	net2.cuda()
+	net2.initialize_parameters()
+	net2.eval()
 
 	gui = GUI(game.board)
 	gui.draw()
@@ -95,8 +101,8 @@ def play(net: AlphaZeroNet):
 			play_move_ai_mcts(game, net)
 			# play_move_random(game)
 		else: # Black
-			play_move_player(game, gui)
-			# play_move_ai_mcts(game, net)
+			# play_move_player(game, gui)
+			play_move_ai_mcts(game, net2)
 			# play_move_random(game)
 
 

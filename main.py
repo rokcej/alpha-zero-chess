@@ -10,12 +10,12 @@ MODEL_DIR  = "data/models"
 MODEL_NAME = "model.pt"
 SAVE_FILE  = os.path.join(MODEL_DIR, MODEL_NAME)
 
-NUM_STEPS = 20
+NUM_STEPS = 30
 NUM_GAMES = 10
 MAX_MOVES = 300 # Originally 512
 NUM_SIMULATIONS = 200 # Originally 800
 NUM_EPOCHS = 20
-BATCH_SIZE = 16
+BATCH_SIZE = 128
 
 if __name__ == "__main__":
 	net = AlphaZeroNet()
