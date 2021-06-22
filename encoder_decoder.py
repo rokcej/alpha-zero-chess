@@ -110,8 +110,9 @@ def decode_action(encoded: int, board: chess.Board):
 
 
 def encode_board(board: chess.Board):
-	M = np.zeros((14, 8, 8)) # History planes
-	L = np.zeros((6, 8, 8)) # Auxiliary planes
+	# M = np.zeros((14, 8, 8), dtype=np.float) # History planes
+	# L = np.zeros((6, 8, 8), dtype=np.float) # Auxiliary planes
+	ML = np.zeros((20, 8, 8), dtype=np.float)
 
 	# Orient board to player's perspective
 	mirror = board.turn == chess.BLACK
@@ -132,12 +133,12 @@ def encode_board(board: chess.Board):
 				elif piece.piece_type == chess.KING:   type_off = 5
 				# Flip board if black's turn
 				rank_canon = 7 - rank if mirror else rank
-				M[color_off * 6 + type_off, rank_canon, file] = 1
+				ML[color_off * 6 + type_off, rank_canon, file] = 1
 	# Repetitions
 	if board.is_repetition(2):
-		M[12, :, :] = 1
+		ML[12, :, :] = 1
 		if board.is_repetition(3):
-			M[13, :, :] = 1
+			ML[13, :, :] = 1
 
 	# # Color
 	# if board.turn == chess.BLACK: L[0, :, :] = 1
@@ -145,19 +146,20 @@ def encode_board(board: chess.Board):
 	# L[1, :, :] = board.ply()
 
 	# P1 and P2 castling
-	if board.has_kingside_castling_rights(P1):  L[0, :, :] = 1
-	if board.has_queenside_castling_rights(P1): L[1, :, :] = 1
-	if board.has_kingside_castling_rights(P2):  L[2, :, :] = 1
-	if board.has_queenside_castling_rights(P2): L[3, :, :] = 1
+	if board.has_kingside_castling_rights(P1):  ML[14, :, :] = 1
+	if board.has_queenside_castling_rights(P1): ML[15, :, :] = 1
+	if board.has_kingside_castling_rights(P2):  ML[16, :, :] = 1
+	if board.has_queenside_castling_rights(P2): ML[17, :, :] = 1
 	# En passant
 	if board.ep_square != None:
 		rank = chess.square_rank(board.ep_square)
 		file = chess.square_file(board.ep_square)
 		# Flip board if black's turn
 		rank_canon = 7 - rank if mirror else rank
-		L[4, rank_canon, file] = 1
+		ML[18, rank_canon, file] = 1
 	# No-progress count
-	L[5, :, :] = board.halfmove_clock
+	ML[19, :, :] = board.halfmove_clock
 
-	return M, L
+	# return M, L
+	return ML
 

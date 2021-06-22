@@ -11,8 +11,8 @@ class Game():
 		return [ endec.encode_action(move, self.board) for move in self.board.legal_moves ]
 
 	def get_state(self):
-		M, L = endec.encode_board(self.board)
-		return torch.from_numpy(np.concatenate((M, L), 0)).float()
+		s = endec.encode_board(self.board)
+		return torch.from_numpy(s).float()
 
 	def apply(self, a: int):
 		self.board.push(endec.decode_action(a, self.board))

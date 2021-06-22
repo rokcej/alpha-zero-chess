@@ -8,7 +8,8 @@ class AlphaZeroNet(nn.Module):
 		super(AlphaZeroNet, self).__init__()
 
 		self.conv_block = ConvBlock()
-		self.res_blocks = nn.ModuleList([ ResBlock() for i in range(19) ])
+		# self.res_blocks = nn.ModuleList([ ResBlock() for i in range(19) ])
+		self.res_blocks = nn.ModuleList([ ResBlock() for i in range(11) ])
 		self.out_block = OutBlock()
 
 	def initialize_parameters(self):
