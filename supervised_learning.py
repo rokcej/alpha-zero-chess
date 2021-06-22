@@ -7,9 +7,13 @@ from tqdm import tqdm
 import chess
 import pickle
 import matplotlib.pyplot as plt
+import random
+import os
 
 from network import AlphaZeroNet
 import encoder_decoder as endec
+
+SAVE_DIR = "data/supervised/"
 
 class SupervisedDataset(Dataset):
 	def __init__(self, data):
@@ -72,6 +76,20 @@ def train(net, train_data, num_epochs, batch_size):
 			
 			avg_losses.append(total_loss / len(train_loader))
 			prog_bar.set_postfix_str(f"Avg Loss = {avg_losses[-1]}")
+
+		
+		if (epoch % 5) == 0:
+			save_checkpoint = { 
+				"state_dict": net.state_dict(),
+				"epoch": epoch + 1
+			}
+			torch.save(save_checkpoint, os.path.join(SAVE_DIR, f"model_{epoch+1}.pt"))
+			
+	save_checkpoint = { 
+		"state_dict": net.state_dict(),
+		"epoch": epoch + 1
+	}
+	torch.save(save_checkpoint, os.path.join(SAVE_DIR, f"model.pt"))
 		
 	plt.plot(avg_losses)
 	plt.xlabel("Epoch")
@@ -88,9 +106,10 @@ if __name__ == "__main__":
 	net.cuda()
 
 	net.initialize_parameters()
-
+	
+	random.shuffle(train_data)
 	max = int(len(train_data) * 0.1)
 
-	train(net, train_data[:max], 2, 256)
+	train(net, train_data[:max], 2, 512)
 
 	
