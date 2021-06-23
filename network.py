@@ -90,7 +90,8 @@ class OutBlock(nn.Module):
 		p = F.relu(p)
 		p = self.conv2_p(p)
 		p = p.reshape(p.shape[0], -1) # p.reshape(batch_size, -1)
-		p = F.log_softmax(p, dim=1) 
+		# p = F.log_softmax(p, dim=1)
+		p = F.softmax(p, dim=1)
 
 		# Value head
 		v = self.conv_v(s)

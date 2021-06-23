@@ -102,7 +102,11 @@ def expand(node: Node, game: Game, net):
 
 	for action in actions:
 		prior = p[action].item()
-		node.children[action] = Node(prior / p_sum, -node.to_play)
+		if p_sum > 0.0:
+			node.children[action] = Node(prior / p_sum, -node.to_play)
+		else:
+			node.children[action] = Node(1.0 / len(actions), -node.to_play)
+			print("Warning: policy sum is zero")
 
 	return v * node.to_play
 	
