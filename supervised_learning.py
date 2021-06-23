@@ -94,7 +94,7 @@ def train(net, train_data, num_epochs, epoch_start, batch_size, learning_rate):
 	plt.plot(avg_losses)
 	plt.xlabel("Epoch")
 	plt.ylabel("Loss")
-	plt.savefig(os.path.join(SAVE_DIR, "loss_{num_epochs}_{batch_size}_{optimizer.defaults['lr']}.png", dpi=150))
+	plt.savefig(os.path.join(SAVE_DIR, f"loss_{num_epochs}_{batch_size}_{optimizer.defaults['lr']}.png", dpi=150))
 
 
 if __name__ == "__main__":
