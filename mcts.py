@@ -91,10 +91,7 @@ def expand(node: Node, game: Game, net):
 	####################################################
 	# This part takes up >95% of MCTS computation time #
 	s = game.get_state().cuda().unsqueeze(0)
-	p, v = net(s)
-
-	p = p.squeeze(0).detach().cpu().numpy()
-	v = v.squeeze(0).item()
+	p, v = net.predict_detach(s)
 	####################################################
 
 	actions = game.get_actions()
@@ -103,10 +100,12 @@ def expand(node: Node, game: Game, net):
 	for action in actions:
 		prior = p[action].item()
 		if p_sum > 0.0:
-			node.children[action] = Node(prior / p_sum, -node.to_play)
+			prior /= p_sum
 		else:
-			node.children[action] = Node(1.0 / len(actions), -node.to_play)
+			prior = 1.0 / len(actions)
 			print("Warning: policy sum is zero")
+
+		node.children[action] = Node(prior, -node.to_play)
 
 	return v * node.to_play
 	

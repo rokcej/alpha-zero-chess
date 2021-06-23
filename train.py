@@ -19,11 +19,11 @@ class AlphaZeroLoss(nn.Module):
 	def __init__(self):
 		super(AlphaZeroLoss, self).__init__()
 
-	def forward(self, p, pi, v, z):
+	def forward(self, p_log, pi, v, z):
 		loss_v = ((z - v) ** 2)
-		loss_p = torch.sum(pi * p, 1)
+		loss_p = -torch.sum(pi * p_log, 1)
 
-		return torch.mean(loss_v.view(-1) - loss_p)
+		return torch.mean(loss_v.view(-1) + loss_p)
 
 def train(net, train_data, num_epochs, batch_size):
 	train_set = SelfPlayDataset(train_data)
@@ -44,8 +44,8 @@ def train(net, train_data, num_epochs, batch_size):
 
 				optimizer.zero_grad()
 
-				p, v = net(s)
-				loss = criterion(p, pi, v, z)
+				p_log, v = net(s)
+				loss = criterion(p_log, pi, v, z)
 				loss.backward()
 				total_loss += loss.item()
 

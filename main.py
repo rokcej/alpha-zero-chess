@@ -10,10 +10,10 @@ MODEL_DIR  = "data/models"
 MODEL_NAME = "model.pt"
 SAVE_FILE  = os.path.join(MODEL_DIR, MODEL_NAME)
 
-NUM_STEPS = 30
-NUM_GAMES = 10
+NUM_STEPS = 2
+NUM_GAMES = 2
 MAX_MOVES = 300 # Originally 512
-NUM_SIMULATIONS = 200 # Originally 800
+NUM_SIMULATIONS = 2 # Originally 800
 NUM_EPOCHS = 20
 BATCH_SIZE = 128
 
