@@ -44,10 +44,10 @@ def mcts(net, game: Game, num_simulations, root=None):
 		while len(node.children) > 0:
 			# Select action
 			action = None
-			max_score = -math.inf
+			max_score = None
 			for _action, _child in node.children.items():
 				score = ucb(node, _child)
-				if score > max_score:
+				if max_score is None or score > max_score:
 					max_score = score
 					action = _action
 
