@@ -40,18 +40,18 @@ class AlphaZeroLoss(nn.Module):
 
 		return torch.mean(loss_v.view(-1) + loss_p)
 
-def train(net, train_data, num_epochs, batch_size):
+def train(net, train_data, num_epochs, epoch_start, batch_size, learning_rate):
 	train_set = SupervisedDataset(train_data)
 	train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=0)
 	
 	criterion = AlphaZeroLoss()
 	# optimizer = optim.Adam(net.parameters(), lr=0.1, weight_decay=1e-6)
-	optimizer = optim.SGD(net.parameters(), lr=0.2, momentum=0.9)
+	optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9)
 	scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100, 200, 300], gamma=0.1) # [100, 300, 500]
 
 	avg_losses = []
 
-	for epoch in range(num_epochs):
+	for epoch in range(epoch_start, epoch_start + num_epochs):
 		total_loss = 0.0
 		with tqdm(total=len(train_loader), desc=f"Epoch {epoch+1}") as prog_bar:
 			for i, data in enumerate(train_loader, 0):
@@ -78,7 +78,7 @@ def train(net, train_data, num_epochs, batch_size):
 			prog_bar.set_postfix_str(f"Avg Loss = {avg_losses[-1]}")
 
 		
-		if (epoch % 5) == 0:
+		if ((epoch + 1) % 5) == 0:
 			save_checkpoint = { 
 				"state_dict": net.state_dict(),
 				"epoch": epoch + 1
@@ -94,22 +94,36 @@ def train(net, train_data, num_epochs, batch_size):
 	plt.plot(avg_losses)
 	plt.xlabel("Epoch")
 	plt.ylabel("Loss")
-	plt.savefig(f"data/supervised/loss_{num_epochs}_{batch_size}_{optimizer.defaults['lr']}.png", dpi=150)
+	plt.savefig(os.path.join(SAVE_DIR, "loss_{num_epochs}_{batch_size}_{optimizer.defaults['lr']}.png", dpi=150))
 
 
 if __name__ == "__main__":
 	train_data = []
-	with open("data/supervised/train_data.pckl", "rb") as f:
+	with open(os.path.join(SAVE_DIR, "train_data.pckl"), "rb") as f:
 		train_data = pickle.load(f)
 
 	net = AlphaZeroNet()
 	net.cuda()
 
+
+	epoch_start = 0
+	save_file = os.path.join(SAVE_DIR + "model.pt")
+	if os.path.isfile(save_file):
+		print("Loading old network...")
+		load_checkpoint = torch.load(save_file)
+		net.load_state_dict(load_checkpoint["state_dict"])
+		epoch_start = load_checkpoint["epoch"]
+	else:
+		if not os.path.exists(SAVE_DIR):
+			os.mkdir(SAVE_DIR)
+		print("Initializing new network...")
+		net.initialize_parameters()
+
 	net.initialize_parameters()
 	
 	random.shuffle(train_data)
-	max = int(len(train_data) * 0.1)
+	max = int(len(train_data))
 
-	train(net, train_data[:max], 2, 512)
+	train(net, train_data[:max], 2, epoch_start, 512, 0.2)
 
 	

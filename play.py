@@ -56,7 +56,7 @@ def play_move_ai_without_mcts(game: Game, net: AlphaZeroNet):
 	time.sleep(0.5)
 
 def play_move_ai_mcts(game: Game, net: AlphaZeroNet):
-	pi, a, root = mcts(net, game, 200)
+	pi, a, root = mcts(net, game, 400)
 
 	# actions = game.get_actions()
 	# for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
@@ -86,12 +86,6 @@ def play(net: AlphaZeroNet):
 	# game.apply(endec.encode_action(chess.Move.from_uci("d1h5"), game.board))
 	# game.apply(endec.encode_action(chess.Move.from_uci("d7d6"), game.board))
 
-
-	net2 = AlphaZeroNet()
-	net2.cuda()
-	net2.initialize_parameters()
-	net2.eval()
-
 	gui = GUI(game.board)
 	gui.draw()
 	
@@ -102,8 +96,8 @@ def play(net: AlphaZeroNet):
 			# play_move_random(game)
 		else: # Black
 			# play_move_player(game, gui)
-			play_move_ai_mcts(game, net2)
-			# play_move_random(game)
+			# play_move_ai_mcts(game, net)
+			play_move_random(game)
 
 
 		gui.draw()
@@ -120,7 +114,7 @@ if __name__ == "__main__":
 	net.cuda()
 
 	# net.initialize_parameters()
-	net.load_state_dict(torch.load("data/models/model.pt")["state_dict"])
+	net.load_state_dict(torch.load("data/supervised/model.pt")["state_dict"])
 
 	net.eval()
 
