@@ -33,9 +33,11 @@ def train(net, train_data, num_epochs, batch_size):
 	optimizer = optim.Adam(net.parameters(), lr=0.1, weight_decay=1e-6)
 	scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[5, 10, 15], gamma=0.1) # [100, 300, 500]
 
+	avg_avg_loss = 0.0
+
 	with tqdm(total=num_epochs, desc="Training", unit="epoch") as prog_bar:
 		for epoch in range(num_epochs):
-			total_loss = 0.0
+			avg_loss = 0.0
 			for i, data in enumerate(train_loader, 0):
 				s, pi, z = data
 				s = s.cuda()
@@ -47,11 +49,15 @@ def train(net, train_data, num_epochs, batch_size):
 				p_log, v = net(s)
 				loss = criterion(p_log, pi, v, z)
 				loss.backward()
-				total_loss += loss.item()
+				avg_loss += loss.item()
 
 				optimizer.step()
 
 			scheduler.step()
 			
-			prog_bar.set_postfix_str(f"Avg loss = {total_loss/len(train_loader)}")
+			avg_loss /= len(train_loader)
+			avg_avg_loss += avg_loss
+			prog_bar.set_postfix_str(f"Avg loss = {avg_loss}")
 			prog_bar.update(1)
+	
+	return avg_avg_loss

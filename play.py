@@ -5,10 +5,8 @@ from network import AlphaZeroNet
 import encoder_decoder as endec
 
 import chess
-import time
 import torch
 import random
-import time
 import sys
 from tqdm import tqdm
 
@@ -42,28 +40,8 @@ def play_move_player(game: Game, gui: GUI):
 	gui.selected = None
 	gui.highlighted.clear()
 
-
-def play_move_ai_without_mcts(game: Game, net: AlphaZeroNet):
-	s = game.get_state().unsqueeze(0).cuda()
-	p, v = net(s)
-	p = p.squeeze(0).detach().cpu().numpy()
-	v = v.squeeze(0).item()
-
-	actions = game.get_actions()
-	probs = p[actions]
-
-	_, a = max((prob, action) for prob, action in zip(probs, actions))
-	game.apply(a)
-	
-	time.sleep(0.5)
-
 def play_move_ai_mcts(game: Game, net: AlphaZeroNet):
 	pi, a, root = mcts(net, game, 50)
-
-	# actions = game.get_actions()
-	# for prob, move, action in zip(pi[actions], [endec.decode_action(action, game.board) for action in actions], actions):
-	# 	print(prob, move, root.children[action].P, root.children[action].N, root.children[action].W, root.children[action].Q)
-
 	game.apply(a)
 
 
@@ -75,31 +53,18 @@ def play_move_random(game: Game):
 def play(net: AlphaZeroNet):
 	game = Game()
 
-	# # Fool's mate
-	# game.apply(endec.encode_action(chess.Move.from_uci("f2f3"), game.board))
-	# game.apply(endec.encode_action(chess.Move.from_uci("e7e6"), game.board))
-	# game.apply(endec.encode_action(chess.Move.from_uci("g2g4"), game.board))
-
-	# # Scholar's mate
-	# game.apply(endec.encode_action(chess.Move.from_uci("e2e4"), game.board))
-	# game.apply(endec.encode_action(chess.Move.from_uci("e7e5"), game.board))
-	# game.apply(endec.encode_action(chess.Move.from_uci("f1c4"), game.board))
-	# game.apply(endec.encode_action(chess.Move.from_uci("b8c6"), game.board))
-	# game.apply(endec.encode_action(chess.Move.from_uci("d1h5"), game.board))
-	# game.apply(endec.encode_action(chess.Move.from_uci("d7d6"), game.board))
-
 	gui = GUI(game.board)
 	gui.draw()
 	
 	while not game.is_over():
 		if game.to_play() == 1: # White
-			# play_move_player(game, gui)
-			play_move_ai_mcts(game, net)
+			play_move_player(game, gui)
+			# play_move_ai_mcts(game, net)
 			# play_move_random(game)
 		else: # Black
 			# play_move_player(game, gui)
-			# play_move_ai_mcts(game, net)
-			play_move_random(game)
+			play_move_ai_mcts(game, net)
+			# play_move_random(game)
 
 
 		gui.draw()
@@ -114,6 +79,11 @@ def play(net: AlphaZeroNet):
 
 def test(net: AlphaZeroNet, num_games):
 	results = { +1: 0, -1: 0, 0: 0 }
+
+	net2 = AlphaZeroNet()
+	net2.cuda()
+	net2.initialize_parameters()
+	net2.eval()
 	
 	with tqdm(total=num_games, desc="Playing games", unit="game") as prog_bar:
 		for i_game in range(num_games):
@@ -124,8 +94,8 @@ def test(net: AlphaZeroNet, num_games):
 					play_move_ai_mcts(game, net)
 					# play_move_random(game)
 				else: # Red
-					# play_move_ai_mcts(game, net)
-					play_move_random(game)
+					play_move_ai_mcts(game, net2)
+					# play_move_random(game)
 					
 			
 			results[game.outcome()] += 1
@@ -144,8 +114,7 @@ if __name__ == "__main__":
 	net = AlphaZeroNet()
 	net.cuda()
 
-	# net.initialize_parameters()
-	net.load_state_dict(torch.load("data/supervised/model.pt")["state_dict"])
+	net.load_state_dict(torch.load("data/model.pt")["state_dict"])
 
 	net.eval()
 

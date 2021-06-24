@@ -1,4 +1,6 @@
 torch
 chess
+numpy
 pygame
 tqdm
+matplotlib

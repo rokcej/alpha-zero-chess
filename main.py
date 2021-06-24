@@ -1,3 +1,4 @@
+from torch.serialization import load
 from network import AlphaZeroNet
 from self_play import self_play
 from train import train
@@ -6,15 +7,15 @@ import os
 import torch
 import pickle
 
-MODEL_DIR  = "data/models"
+MODEL_DIR  = "data/reinforcement"
 MODEL_NAME = "model.pt"
 SAVE_FILE  = os.path.join(MODEL_DIR, MODEL_NAME)
 
-NUM_STEPS = 2
-NUM_GAMES = 2
+NUM_STEPS = 10
+NUM_GAMES = 15
 MAX_MOVES = 300 # Originally 512
-NUM_SIMULATIONS = 2 # Originally 800
-NUM_EPOCHS = 20
+NUM_SIMULATIONS = 200 # Originally 800
+NUM_EPOCHS = 10
 BATCH_SIZE = 128
 
 if __name__ == "__main__":
@@ -22,11 +23,13 @@ if __name__ == "__main__":
 	net.cuda()
 
 	step_start = 0
+	avg_losses = []
 	if os.path.isfile(SAVE_FILE):
 		print("Loading old network...")
 		load_checkpoint = torch.load(SAVE_FILE)
 		net.load_state_dict(load_checkpoint["state_dict"])
 		step_start = load_checkpoint["step"]
+		avg_losses = load_checkpoint["avg_losses"]
 	else:
 		if not os.path.exists(MODEL_DIR):
 			os.mkdir(MODEL_DIR)
@@ -41,19 +44,21 @@ if __name__ == "__main__":
 		with torch.no_grad():
 			train_data = self_play(net, NUM_GAMES, MAX_MOVES, NUM_SIMULATIONS)
 
-		# Save training data
-		with open(os.path.join(MODEL_DIR, f"train_data_{step}.pckl"), "wb") as f:
-			pickle.dump(train_data, f)
+		# # Save training data
+		# with open(os.path.join(MODEL_DIR, f"train_data_{step}.pckl"), "wb") as f:
+		# 	pickle.dump(train_data, f)
 
 		# Train network
 		net.train()
-		train(net, train_data, NUM_EPOCHS, BATCH_SIZE)
+		avg_loss = train(net, train_data, NUM_EPOCHS, BATCH_SIZE)
+		avg_losses.append(avg_loss)
 
 		# Save network
 		print("Saving... ", end="")
 		save_checkpoint = { 
 			"state_dict": net.state_dict(),
-			"step": step + 1
+			"step": step + 1,
+			"avg_losses": avg_losses
 		}
 		torch.save(save_checkpoint, SAVE_FILE + ".bak") # Backup
 		torch.save(save_checkpoint, SAVE_FILE)

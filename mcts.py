@@ -2,6 +2,8 @@ from game import Game
 import math
 import numpy as np
 
+WARNINGS_LEFT = 5
+
 class Node():
 	def __init__(self, P: float, to_play: int):
 		self.P = P
@@ -103,7 +105,10 @@ def expand(node: Node, game: Game, net):
 			prior /= p_sum
 		else:
 			prior = 1.0 / len(actions)
-			print("Warning: policy sum is zero")
+			global WARNINGS_LEFT
+			if WARNINGS_LEFT > 0:
+				print(f"Warning: policy sum is zero ({WARNINGS_LEFT} warnings left)")
+				WARNINGS_LEFT -= 1
 
 		node.children[action] = Node(prior, -node.to_play)
 

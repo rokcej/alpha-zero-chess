@@ -1,2 +1,5 @@
 __pycache__
-data/models/
+data/supervised/
+data/reinforcement/
+data/fics/
+
